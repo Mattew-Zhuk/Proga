@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QFile>
 #include <QUrl>
+#include <QDir>
 
 HelpWindow::HelpWindow(QWidget *parent) : QDialog(parent)
 {
@@ -17,7 +18,7 @@ void HelpWindow::setupUI()
 {
 	setWindowTitle("Справка");
 	setModal(true);
-	resize(400, 300);
+	resize(500, 400);
 
 	QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -31,7 +32,11 @@ void HelpWindow::setupUI()
 
 void HelpWindow::loadHelpContent()
 {
-	QString htmlContent = R"(
+	QString imagePath = QDir::currentPath() + "/image.jpg";
+
+	QUrl imageUrl = QUrl::fromLocalFile(imagePath);
+
+	QString htmlContent = QString(R"(
 	<!DOCTYPE html>
 	<html>
 	<head>
@@ -42,15 +47,24 @@ void HelpWindow::loadHelpContent()
 				background-color: #000000;
 			}
 			h1 {
-				color: #333;
+				color: #FFFFFF;
 				text-align: center;
 			}
-			p {
-				color: #666;
-				line-height: 1.6;
+			.image-container {
+				text-align: center;
+				margin: 20px 0;
+				padding: 10px;
+				background-color: black;
+				border: 1px solid #ddd;
+				border-radius: 5px;
+			}
+			img {
+				max-width: 100%%;
+				height: auto;
+				border-radius: 3px;
 			}
 			.info {
-				background-color: #e7f3ff;
+				background-color: #FFFFFF;
 				border-left: 4px solid #2196F3;
 				padding: 10px;
 				margin: 10px 0;
@@ -60,23 +74,22 @@ void HelpWindow::loadHelpContent()
 	<body>
 		<h1>Справка по программе</h1>
 
-		<div class="info">
-			<h2>О программе</h2>
+		<div class="image-container">
+			<h3>Пример изображения:</h3>
+			<img src="%1" alt="Изображение не найдено">
+			<p><i>Путь к изображению: %2</i></p>
 		</div>
 
 		<h2>Функции программы:</h2>
 		<ul>
 			<li><b>Первая</b> - открывает первое окно</li>
-			<li><b>Справка</b> - показывает эту справку</li>
+			<li><b>Справка</b> - показывает эту справку с изображением</li>
 			<li><b>Выход</b> - завершает работу программы</li>
 		</ul>
 
-		<h2>Навигация:</h2>
-		<p>В каждом окне есть кнопка "Назад" для возврата в главное окно.</p>
-
 	</body>
 	</html>
-	)";
+	)").arg(imageUrl.toString()).arg(imagePath);
 
 	m_textBrowser->setHtml(htmlContent);
 }

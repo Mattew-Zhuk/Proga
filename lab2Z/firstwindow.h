@@ -2,21 +2,44 @@
 #define FIRSTWINDOW_H
 
 #include <QDialog>
-
-class QPushButton;
+#include <QTableView>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QDateEdit>
+#include <QDoubleSpinBox>
+#include <QLabel>
+#include <QGroupBox>
+#include "meterreadingmodel.h"
 
 class FirstWindow : public QDialog
 {
 	Q_OBJECT
+
 public:
 	explicit FirstWindow(QWidget *parent = nullptr);
 
 private slots:
+	void addReading();
+	void deleteSelectedReading();
+	void loadFromFile();
 	void onBackButtonClicked();
 
 private:
-	void setupUI();
+	void setupUi();
+	QLayout* createInputGroup();
+	QLayout* createButtons();
+	void createTableView();
 
+	MeterReadingModel* model_;
+	QTableView* tableView_;
+	QLineEdit* resourceTypeEdit_;
+	QDateEdit* dateEdit_;
+	QDoubleSpinBox* valueSpinBox_;
+	QPushButton* addButton_;
+	QPushButton* deleteButton_;
+	QPushButton* loadButton_;
 	QPushButton *m_backButton;
 };
 
