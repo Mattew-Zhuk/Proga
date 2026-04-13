@@ -32,7 +32,8 @@ void HelpWindow::setupUI()
 
 void HelpWindow::loadHelpContent()
 {
-	QString imagePath = QDir::currentPath() + "/image.jpg";
+	QString imagePath = QDir::currentPath () + "/image.jpg";
+
 
 	QUrl imageUrl = QUrl::fromLocalFile(imagePath);
 

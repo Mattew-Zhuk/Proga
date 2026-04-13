@@ -4,6 +4,17 @@
 #include <QString>
 #include <QDate>
 #include <QMetaType>
+#include <stdexcept>
+
+class ParseException : public std::runtime_error {
+public:
+	explicit ParseException(const QString& message): std::runtime_error(message.toStdString()), message_(message) {}
+
+	QString getMessage() const { return message_; }
+
+private:
+	QString message_;
+};
 
 class MeterReading {
 public:
@@ -20,6 +31,7 @@ public:
 
 	QString toString() const;
 	static MeterReading fromString(const QString& str);
+	static bool tryFromString(const QString& str, MeterReading& result, QString& errorMessage);
 
 private:
 	QString resource_type_;

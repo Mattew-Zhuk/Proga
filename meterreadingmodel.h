@@ -21,6 +21,9 @@ public:
 	void loadFromFile(const QString& fileName);
 	void clear();
 
+	int getReadingCount() const;
+	MeterReading getReadingAt(int index) const;
+
 private:
 	std::vector<MeterReading> readings_;
 };

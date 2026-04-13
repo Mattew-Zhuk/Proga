@@ -1,4 +1,5 @@
 #include "meterreadingmodel.h"
+#include "logger.h"
 #include <QFile>
 #include <QTextStream>
 
@@ -57,27 +58,58 @@ void MeterReadingModel::removeReading(int row) {
 
 void MeterReadingModel::loadFromFile(const QString& fileName) {
 	QFile file(fileName);
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		Logger::instance().logError(QString("Не удалось открыть файл: %1").arg(fileName));
 		return;
+	}
 
 	beginResetModel();
-	readings_.clear();
+
+	int validCount = 0;
+	int errorCount = 0;
+	int lineNumber = 0;
 
 	QTextStream in(&file);
 	while (!in.atEnd()) {
+		lineNumber++;
 		QString line = in.readLine().trimmed();
-		if (!line.isEmpty()) {
-			MeterReading reading = MeterReading::fromString(line);
+
+		if (line.isEmpty()) {
+			continue;
+		}
+
+		MeterReading reading;
+		QString errorMessage;
+
+		if (MeterReading::tryFromString(line, reading, errorMessage)) {
 			readings_.push_back(reading);
+			validCount++;
+		} else {
+			errorCount++;
+			Logger::instance().logError(QString("Строка %1: %2").arg(lineNumber).arg(errorMessage));
 		}
 	}
 
-	endResetModel();
 	file.close();
+
+	Logger::instance().logInfo(QString("Загрузка завершена. Загружено: %1, Ошибок: %2").arg(validCount).arg(errorCount));
+
+	endResetModel();
 }
 
 void MeterReadingModel::clear() {
 	beginResetModel();
 	readings_.clear();
 	endResetModel();
+}
+
+int MeterReadingModel::getReadingCount() const {
+	return readings_.size();
+}
+
+MeterReading MeterReadingModel::getReadingAt(int index) const {
+	if (index >= 0 && index < readings_.size()) {
+		return readings_[index];
+	}
+	return MeterReading();
 }

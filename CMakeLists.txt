@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Test)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Test)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -24,6 +24,8 @@ set(PROJECT_SOURCES
         meterreading.h
         meterreadingmodel.cpp
         meterreadingmodel.h
+        logger.cpp
+        logger.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -51,6 +53,29 @@ endif()
 
 target_link_libraries(lab2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
+# Тесты
+set(TEST_SOURCES
+    test_meterreadingmodel.cpp
+    meterreading.cpp
+    meterreading.h
+    meterreadingmodel.cpp
+    meterreadingmodel.h
+    logger.cpp
+    logger.h
+)
+
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_executable(test_runner
+        ${TEST_SOURCES}
+    )
+else()
+    add_executable(test_runner
+        ${TEST_SOURCES}
+    )
+endif()
+
+target_link_libraries(test_runner PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Test)
+
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
@@ -75,3 +100,7 @@ install(TARGETS lab2
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(lab2)
 endif()
+
+# Добавление тестов в CTest
+enable_testing()
+add_test(NAME MeterReadingModelTests COMMAND test_runner)

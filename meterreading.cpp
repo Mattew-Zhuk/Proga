@@ -36,15 +36,42 @@ QString MeterReading::toString() const {
 }
 
 MeterReading MeterReading::fromString(const QString& str) {
+	MeterReading result;
+	QString error;
+	if (!tryFromString(str, result, error)) {
+		throw ParseException(error);
+	}
+	return result;
+}
+
+bool MeterReading::tryFromString(const QString& str, MeterReading& result, QString& errorMessage) {
 	QRegularExpression regex("\"([^\"]+)\"\\s+(\\d{4}\\.\\d{2}\\.\\d{2})\\s+(\\d+\\.?\\d*)");
 	QRegularExpressionMatch match = regex.match(str);
 
-	if (match.hasMatch()) {
-		QString resourceType = match.captured(1);
-		QDate date = QDate::fromString(match.captured(2), "yyyy.MM.dd");
-		double value = match.captured(3).toDouble();
-		return MeterReading(resourceType, date, value);
+	if (!match.hasMatch()) {
+		errorMessage = QString("Неверный формат строки: %1").arg(str);
+		return false;
 	}
 
-	return MeterReading();
+	QString resourceType = match.captured(1);
+	if (resourceType.isEmpty()) {
+		errorMessage = "Тип ресурса не может быть пустым";
+		return false;
+	}
+
+	QDate date = QDate::fromString(match.captured(2), "yyyy.MM.dd");
+	if (!date.isValid()) {
+		errorMessage = QString("Неверная дата: %1").arg(match.captured(2));
+		return false;
+	}
+
+	bool ok;
+	double value = match.captured(3).toDouble(&ok);
+	if (!ok || value < 0) {
+		errorMessage = QString("Неверное значение: %1").arg(match.captured(3));
+		return false;
+	}
+
+	result = MeterReading(resourceType, date, value);
+	return true;
 }

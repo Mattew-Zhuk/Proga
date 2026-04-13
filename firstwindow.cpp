@@ -32,10 +32,12 @@ void FirstWindow::setupUi() {
 	setWindowTitle("Показания счетчиков");
 	resize(800, 600);
 }
+
 void FirstWindow::onBackButtonClicked()
 {
 	accept();
 }
+
 QLayout* FirstWindow::createInputGroup() {
 	QHBoxLayout* layout = new QHBoxLayout();
 
@@ -122,9 +124,12 @@ void FirstWindow::deleteSelectedReading() {
 }
 
 void FirstWindow::loadFromFile() {
-	QString fileName = "data.txt";
-	//QString fileName = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Текстовые файлы (*.txt)");
+	QString fileName = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Текстовые файлы (*.txt)");
 
-	model_->loadFromFile(fileName);
-	tableView_->resizeColumnsToContents();
+	if (!fileName.isEmpty()) {
+		model_->loadFromFile(fileName);
+		tableView_->resizeColumnsToContents();
+
+		QMessageBox::information(this, "Загрузка", "Файл загружен. Проверьте errors.log для просмотра ошибок.");
+	}
 }
