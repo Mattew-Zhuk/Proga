@@ -8,7 +8,7 @@ FirstWindow::FirstWindow(QWidget *parent) : QDialog(parent) {
 	model_ = new MeterReadingModel(this);
 	setupUi();
 
-	loadFromFile();
+	//loadFromFile();
 
 	connect(m_backButton, &QPushButton::clicked, this, &FirstWindow::onBackButtonClicked);
 }

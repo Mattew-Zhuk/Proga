@@ -9,53 +9,16 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Включаем создание консоли для тестов
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:CONSOLE")
+endif()
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Test)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Test)
 
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        firstwindow.cpp
-        firstwindow.h
-        helpwindow.cpp
-        helpwindow.h
-        meterreading.cpp
-        meterreading.h
-        meterreadingmodel.cpp
-        meterreadingmodel.h
-        logger.cpp
-        logger.h
-)
-
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(lab2
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
-    )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET lab2 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
-else()
-    if(ANDROID)
-        add_library(lab2 SHARED
-            ${PROJECT_SOURCES}
-        )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
-    else()
-        add_executable(lab2
-            ${PROJECT_SOURCES}
-        )
-    endif()
-endif()
-
-target_link_libraries(lab2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-
-# Тесты
-set(TEST_SOURCES
-    test_meterreadingmodel.cpp
+# Общие исходники
+set(COMMON_SOURCES
     meterreading.cpp
     meterreading.h
     meterreadingmodel.cpp
@@ -64,21 +27,74 @@ set(TEST_SOURCES
     logger.h
 )
 
+# Основное приложение
+set(PROJECT_SOURCES
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    firstwindow.cpp
+    firstwindow.h
+    helpwindow.cpp
+    helpwindow.h
+    ${COMMON_SOURCES}
+)
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(test_runner
+    qt_add_executable(lab2
+        MANUAL_FINALIZATION
+        ${PROJECT_SOURCES}
+    )
+else()
+    add_executable(lab2
+        ${PROJECT_SOURCES}
+    )
+endif()
+
+target_link_libraries(lab2 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
+# Модульные тесты модели
+set(TEST_SOURCES
+    test_meterreadingmodel.cpp
+    ${COMMON_SOURCES}
+)
+
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_executable(test_model_runner
         ${TEST_SOURCES}
     )
 else()
-    add_executable(test_runner
+    add_executable(test_model_runner
         ${TEST_SOURCES}
     )
 endif()
 
-target_link_libraries(test_runner PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Test)
+target_link_libraries(test_model_runner PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Test)
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
+# UI-тесты
+set(UI_TEST_SOURCES
+    test_ui.cpp
+    mainwindow.cpp
+    mainwindow.h
+    firstwindow.cpp
+    firstwindow.h
+    helpwindow.cpp
+    helpwindow.h
+    ${COMMON_SOURCES}
+)
+
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_executable(test_ui_runner
+        ${UI_TEST_SOURCES}
+    )
+else()
+    add_executable(test_ui_runner
+        ${UI_TEST_SOURCES}
+    )
+endif()
+
+target_link_libraries(test_ui_runner PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Test)
+
+# Настройки для основного приложения
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.lab2)
 endif()
@@ -103,4 +119,5 @@ endif()
 
 # Добавление тестов в CTest
 enable_testing()
-add_test(NAME MeterReadingModelTests COMMAND test_runner)
+add_test(NAME MeterReadingModelTests COMMAND test_model_runner)
+add_test(NAME UITests COMMAND test_ui_runner)
