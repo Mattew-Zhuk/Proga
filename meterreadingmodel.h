@@ -19,6 +19,7 @@ public:
 	void addReading(const MeterReading& reading);
 	void removeReading(int row);
 	void loadFromFile(const QString& fileName);
+	void saveToFile(const QString& fileName) const;
 	void clear();
 
 	int getReadingCount() const;

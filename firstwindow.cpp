@@ -1,5 +1,6 @@
 #include "firstwindow.h"
 #include "mainwindow.h"
+#include "commandprocessor.h"
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QHeaderView>
@@ -7,16 +8,12 @@
 FirstWindow::FirstWindow(QWidget *parent) : QDialog(parent) {
 	model_ = new MeterReadingModel(this);
 	setupUi();
-
-	//loadFromFile();
-
 	connect(m_backButton, &QPushButton::clicked, this, &FirstWindow::onBackButtonClicked);
 }
 
 void FirstWindow::setupUi() {
 	QWidget* centralWidget = new QWidget(this);
 	QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
-
 
 	m_backButton = new QPushButton("Назад", this);
 
@@ -26,15 +23,12 @@ void FirstWindow::setupUi() {
 	mainLayout->addLayout(createButtons());
 	mainLayout->addWidget(m_backButton);
 
-
-
-	setModal (true);
+	setModal(true);
 	setWindowTitle("Показания счетчиков");
 	resize(800, 600);
 }
 
-void FirstWindow::onBackButtonClicked()
-{
+void FirstWindow::onBackButtonClicked() {
 	accept();
 }
 
@@ -83,8 +77,12 @@ QLayout* FirstWindow::createButtons() {
 	loadButton_ = new QPushButton("Загрузить из файла");
 	connect(loadButton_, &QPushButton::clicked, this, &FirstWindow::loadFromFile);
 
+	QPushButton* execCmdButton = new QPushButton("Выполнить команды");
+	connect(execCmdButton, &QPushButton::clicked, this, &FirstWindow::onExecuteCommandsClicked);
+
 	layout->addWidget(deleteButton_);
 	layout->addWidget(loadButton_);
+	layout->addWidget(execCmdButton);
 	layout->addStretch();
 
 	return layout;
@@ -125,11 +123,23 @@ void FirstWindow::deleteSelectedReading() {
 
 void FirstWindow::loadFromFile() {
 	QString fileName = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Текстовые файлы (*.txt)");
-
 	if (!fileName.isEmpty()) {
 		model_->loadFromFile(fileName);
 		tableView_->resizeColumnsToContents();
-
 		QMessageBox::information(this, "Загрузка", "Файл загружен. Проверьте errors.log для просмотра ошибок.");
 	}
+}
+
+void FirstWindow::onExecuteCommandsClicked() {
+	QString fileName = QFileDialog::getOpenFileName(this, "Выберите файл команд", "", "Текстовые файлы (*.txt)");
+	if (fileName.isEmpty()) return;
+
+	CommandProcessor processor(model_);
+	QString summary;
+	if (processor.processCommandsFromFile(fileName, summary)) {
+		QMessageBox::information(this, "Выполнение команд", summary);
+	} else {
+		QMessageBox::warning(this, "Ошибка при выполнении команд", summary);
+	}
+	tableView_->resizeColumnsToContents();
 }

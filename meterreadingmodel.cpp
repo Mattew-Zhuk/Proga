@@ -97,6 +97,20 @@ void MeterReadingModel::loadFromFile(const QString& fileName) {
 	endResetModel();
 }
 
+void MeterReadingModel::saveToFile(const QString& fileName) const {
+	QFile file(fileName);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		Logger::instance().logError(QString("Не удалось открыть файл для сохранения: %1").arg(fileName));
+		return;
+	}
+	QTextStream out(&file);
+	for (const auto& reading : readings_) {
+		out << reading.toString() << "\n";
+	}
+	file.close();
+	Logger::instance().logInfo(QString("Сохранено %1 записей в файл: %2").arg(readings_.size()).arg(fileName));
+}
+
 void MeterReadingModel::clear() {
 	beginResetModel();
 	readings_.clear();

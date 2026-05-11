@@ -25,6 +25,7 @@ private slots:
 	void deleteSelectedReading();
 	void loadFromFile();
 	void onBackButtonClicked();
+	void onExecuteCommandsClicked();   // новый слот
 
 private:
 	void setupUi();
@@ -40,7 +41,7 @@ private:
 	QPushButton* addButton_;
 	QPushButton* deleteButton_;
 	QPushButton* loadButton_;
-	QPushButton *m_backButton;
+	QPushButton* m_backButton;
 };
 
 #endif // FIRSTWINDOW_H
